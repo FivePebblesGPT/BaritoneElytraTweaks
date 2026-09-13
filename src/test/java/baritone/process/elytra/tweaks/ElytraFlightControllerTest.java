@@ -132,6 +132,37 @@ public class ElytraFlightControllerTest {
     }
 
     @Test
+    public void invalidationRebuildsStateFromObservedMotion() {
+        ElytraFlightController controller = new ElytraFlightController();
+
+        controller.tick(
+                ElytraTweakMode.NO_FIREWORK_BASELINE,
+                200.0,
+                new Vec3(2.2, -0.1, 0.0),
+                false,
+                200.0,
+                -64.0,
+                320.0
+        );
+        assertEquals(ElytraFlightController.NoFireworkState.PULL_UP, controller.getNoFireworkState());
+
+        controller.invalidate();
+        ElytraFlightController.Decision resumed = controller.tick(
+                ElytraTweakMode.NO_FIREWORK_BASELINE,
+                198.0,
+                new Vec3(1.0, -0.2, 0.0),
+                false,
+                198.0,
+                -64.0,
+                320.0
+        );
+
+        assertEquals(ElytraFlightController.NoFireworkState.DIVE, controller.getNoFireworkState());
+        assertEquals(32.5, resumed.pitchDeg(), 1.0e-6);
+        assertFalse(resumed.shouldLaunchRocket());
+    }
+
+    @Test
     public void offModeIsInactive() {
         ElytraFlightController controller = new ElytraFlightController();
         ElytraFlightController.Decision decision = controller.tick(
