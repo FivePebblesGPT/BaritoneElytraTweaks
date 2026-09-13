@@ -13,6 +13,8 @@
     "MixinClientPlayerEntity",
     "MixinClientPlayNetHandler",
     "MixinCommandSuggestionHelper",
+    "MixinElytraBehavior",
+    "MixinElytraProcess",
     "MixinEntity",
     "MixinEntityRenderManager",
     "MixinFireworkRocketEntity",
