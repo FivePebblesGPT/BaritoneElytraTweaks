@@ -105,6 +105,16 @@ public final class ElytraFlightController {
         return decision;
     }
 
+    /**
+     * Invalidates state after an external safety controller takes over.
+     * The next optimized tick will rebuild its state from observed motion.
+     */
+    public void invalidate() {
+        previousMode = ElytraTweakMode.OFF;
+        rocketState = RocketState.POWERED_CLIMB;
+        noFireworkState = NoFireworkState.DIVE;
+    }
+
     private Decision tickNoFirework(ElytraTweakMode mode, Vec3 velocity) {
         final double trigger = mode.triggerSpeedBlocksPerTick();
         switch (noFireworkState) {
