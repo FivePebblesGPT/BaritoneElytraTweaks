@@ -100,6 +100,9 @@ public abstract class MixinElytraBehavior {
         this.baritoneElytraTweaks$boostTicksRemaining = 0;
 
         if (!mode.isEnabled() || this.landingMode || !this.ctx.player().isFallFlying()) {
+            if (this.baritoneElytraTweaks$controller != null) {
+                this.baritoneElytraTweaks$controller.invalidate();
+            }
             return;
         }
 
@@ -141,12 +144,19 @@ public abstract class MixinElytraBehavior {
                 this.baritoneElytraTweaks$boostTicksRemaining
         )) {
             this.baritoneElytraTweaks$decision = candidate;
+        } else {
+            this.baritoneElytraTweaks$controller.invalidate();
         }
     }
 
     @Inject(method = "tick", at = @At("RETURN"))
     private void baritoneElytraTweaks$applyPitch(CallbackInfo ci) {
-        if (!this.baritoneElytraTweaks$decision.isActive() || this.aimPos == null || this.landingMode) {
+        if (!this.baritoneElytraTweaks$decision.isActive()) {
+            return;
+        }
+        if (this.aimPos == null || this.landingMode) {
+            this.baritoneElytraTweaks$controller.invalidate();
+            this.baritoneElytraTweaks$decision = ElytraFlightController.Decision.inactive();
             return;
         }
 
@@ -161,6 +171,8 @@ public abstract class MixinElytraBehavior {
                 rocketActive,
                 this.baritoneElytraTweaks$boostTicksRemaining
         )) {
+            this.baritoneElytraTweaks$controller.invalidate();
+            this.baritoneElytraTweaks$decision = ElytraFlightController.Decision.inactive();
             return;
         }
 
@@ -173,7 +185,12 @@ public abstract class MixinElytraBehavior {
     @Inject(method = "tickUseFireworks", at = @At("HEAD"), cancellable = true)
     private void baritoneElytraTweaks$controlFireworks(Vec3 start, Vec3 goingTo, boolean isBoosted,
                                                        boolean forceUseFirework, CallbackInfo ci) {
-        if (!this.baritoneElytraTweaks$decision.isActive() || this.landingMode || forceUseFirework) {
+        if (forceUseFirework && this.baritoneElytraTweaks$decision.isActive()) {
+            this.baritoneElytraTweaks$controller.invalidate();
+            this.baritoneElytraTweaks$decision = ElytraFlightController.Decision.inactive();
+            return;
+        }
+        if (!this.baritoneElytraTweaks$decision.isActive() || this.landingMode) {
             return;
         }
 
