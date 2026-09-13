@@ -10,7 +10,6 @@
 package baritone.launch.mixins;
 
 import baritone.Baritone;
-import baritone.api.utils.BetterBlockPos;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.RotationUtils;
@@ -46,9 +45,10 @@ import java.util.OptionalInt;
  * Opt-in integration of the reconstructed Elytra policies with Baritone's
  * existing path and collision solver.
  */
-@Mixin(ElytraBehavior.class)
+@Mixin(value = ElytraBehavior.class, remap = false)
 public abstract class MixinElytraBehavior {
 
+    @Unique
     private static final int SAFETY_HORIZON_TICKS = 40;
 
     @Shadow
@@ -155,7 +155,6 @@ public abstract class MixinElytraBehavior {
         final float safeYaw = RotationUtils.calcRotationFromVec3d(start, target, this.ctx.playerRotations()).getYaw();
         final boolean rocketActive = this.baritoneElytraTweaks$getAttachedFirework().isPresent();
 
-        // Re-check using the yaw chosen by Baritone's current safe solution.
         if (!this.baritoneElytraTweaks$isTrajectorySafe(
                 this.baritoneElytraTweaks$decision.pitchDeg(),
                 safeYaw,
@@ -178,9 +177,8 @@ public abstract class MixinElytraBehavior {
             return;
         }
 
-        // In optimized modes the controller owns normal rocket renewal. A
-        // forced firework from Baritone's safety solver is intentionally left
-        // untouched and acts as emergency braking/climb.
+        // A forced firework from Baritone's safety solver remains an emergency
+        // escape hatch. Normal renewal is controlled by the optimization mode.
         ci.cancel();
         if (this.baritoneElytraTweaks$decision.shouldLaunchRocket()) {
             this.baritoneElytraTweaks$launchRocket();
